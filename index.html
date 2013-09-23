@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AngularJS and Firebase together</title>
+    <!--Include scripts-->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0-rc.2/angular.js"></script>
+    <script src="http://code.jquery.com/jquery-2.0.3.js"></script>
+
+    <script src='https://cdn.firebase.com/v0/firebase.js'></script>
+    <script src="https://cdn.firebase.com/libs/angularfire/0.3.0/angularfire.min.js"></script>
+
+    <script src="js/linq.js"></script>
+    <script src="js/main.js"></script>
+    <!--Include styles-->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"/>
+    <style>
+        .controller {
+            width: 700px;
+            padding: 10px;
+            margin: 0 auto;
+        }
+
+        .controller .user-group-wrapper .form-inline {
+            display: inline-block;
+        }
+
+        .controller .user-group-wrapper .panel-title {
+            display: inline-block;
+            float: right;
+        }
+
+        .controller .table-hover>thead>tr>th {
+            cursor: pointer;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .controller .table-hover>tbody>tr>td,
+        .controller .table-hover>tbody>tr>th {
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+    <div ng-app="app">
+        <div class="controller" ng-controller="MainCtrl as m" ng-cloak>
+            <div class="form-wrapper">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{ isUpdate ? 'Update the user' : 'Create a new user'}}</h3>
+                    </div>
+                    <div class="panel-body">
+                        <form class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label for="user-name" class="col-lg-3 control-label">Name</label>
+                                <div class="col-lg-9">
+                                    <input type="text" class="form-control" id="user-name" placeholder="Name" ng-model="newUser.name">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="user-age" class="col-lg-3 control-label">Age</label>
+                                <div class="col-lg-9">
+                                    <input type="text" class="form-control" id="user-age" placeholder="Age" ng-model="newUser.age">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="user-salary" class="col-lg-3 control-label">Salary</label>
+                                <div class="col-lg-9">
+                                    <input type="text" class="form-control" id="user-salary" placeholder="Salary" ng-model="newUser.salary">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="user-job-title" class="col-lg-3 control-label">Job title</label>
+                                <div class="col-lg-9">
+                                    <input type="text" class="form-control" id="user-job-title" placeholder="Job title" ng-model="newUser.jobTitle">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-lg-offset-3 col-lg-9">
+                                    <button type="submit" class="btn btn-default" ng-click="addNewUser(newUser)">{{ isUpdate ? 'Update the user' : 'Add a new user' }}</button>
+                                    <button type="submit" class="btn btn-default" ng-click="undoUser()">Undo</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Filter and sort by job title
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        <form class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label for="search-job-title" class="col-lg-3 control-label">Job title</label>
+                                <div class="col-lg-9">
+                                    <input type="text" class="form-control" id="search-job-title" placeholder="Search by job title" ng-model="searchJobTitle">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="sort-job-title" class="col-lg-3 control-label">Sort</label>
+                                <div class="col-lg-9">
+                                    <button type="submit" id="sort-job-title" ng-click="sortByJobTitleDescending = !sortByJobTitleDescending" class="btn btn-default">Sort by job title</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="user-group-wrapper">
+                <div class="panel panel-default" ng-repeat="group in groups | filter:searchJobTitle | orderBy:'jobTitle':sortByJobTitleDescending">
+                    <div class="panel-heading">
+                        <form class="form-inline" role="form">
+                            <div class="form-group">
+                                <label class="sr-only" for="search-user-name">Name</label>
+                                <input type="text" class="form-control" id="search-user-name" placeholder="Search by name" ng-model="name">
+                            </div>
+                        </form>
+                        <h3 class="panel-title form-control-static">Job category <strong>{{ group.jobTitle }}</strong></h3>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th ng-click="setNestedSort('name', $index)">Name <span class="glyphicon" ng-class="getClassByName('name', $index)"></span></th>
+                                <th ng-click="setNestedSort('age', $index)">Age <span class="glyphicon" ng-class="getClassByName('age', $index)"></span></th>
+                                <th ng-click="setNestedSort('salary', $index)">Salary <span class="glyphicon" ng-class="getClassByName('salary', $index)"></span></th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-click="editUser(user)" ng-repeat="user in group.users | filter:name | orderBy:nestedSort[$index].field:nestedSort[$index].descending">
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ user.name }}</td>
+                                <td>{{ user.age }}</td>
+                                <td>{{ user.salary | currency }}</td>
+                                <td ng-click="removeUser(user.index)">&times;</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
