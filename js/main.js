@@ -1,6 +1,6 @@
 (function($, ng) {
     var app = ng.module('app', ['firebase'])
-        .constant({fireBaseUrl: 'https://xgrommx.firebaseio.com/users'})
+        .constant({fireBaseUrl: 'https://yourname.firebaseio.com/users'})
         .controller('MainCtrl', ['$scope', '$log', 'fireBaseUrl', 'angularFire', 'filterFilter', function($scope, $log, fireBaseUrl, angularFire, filterFilter) {
             Enumerable.Utils.extendTo(Array);
             var emptyUser = {
